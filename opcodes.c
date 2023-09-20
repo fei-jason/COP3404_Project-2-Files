@@ -41,19 +41,32 @@ opcode opcodes[OPCODE_ARRAY_SIZE] = {
 
 int getOpcodeFormat(char* opcode)
 {
+	int index = 0;
 	// Use searchOpcodes() function to get opcode information
+	if(isFormat4Instruction(opcode))
+	{
+		opcode = &opcode[1];
+		index = searchOpcodes(opcode);
+		return index != -1 ? opcodes[index].format + 1 : index;
+	} else {
+		index = searchOpcodes(opcode);
+		return index != -1 ? opcodes[index].format : index;
+	}
+	
 	
 }
 
 int getOpcodeValue(char* opcode)
 {
-	int x;
+	int x = 0;
 	// Do no modify any part of the provided code
 	if(isFormat4Instruction(opcode))
 	{
 		opcode = &opcode[1];
 	}
 	// Use searchOpcodes() function to get opcode information
+	x = searchOpcodes(opcode);
+	return x != -1 ? opcodes[x].value : x;
 }
 
 // Do no modify any part of this function
@@ -64,7 +77,7 @@ bool isFormat4Instruction(char* opcode)
 
 bool isOpcode(char* string)
 {
-	
+	return getOpcodeValue(string) >= 0;
 }
 
 // Do no modify any part of this function

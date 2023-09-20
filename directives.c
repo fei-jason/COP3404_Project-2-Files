@@ -17,7 +17,42 @@ enum directives {
 
 int getMemoryAmount(int directiveType, char* string)
 {
-	
+	int bytes = 0;
+	int decimal = 0;
+	char hexString[8];
+	switch(directiveType) {
+		case BASE:
+			return bytes;
+		case END:
+			return bytes;
+		case START:
+			return bytes;
+		case BYTE:
+			if (strstr(string, "X") != NULL) {
+				char *token = strtok(string, "'");
+				token = strtok(NULL, "'");
+				if (token[0] < '0' || token[0] > 'F' ) {
+					//ERROR 
+				}
+				if(token[1] < '0' || token[1] > 'F') {
+					//ERROR
+				}
+				return bytes + 1;
+			} else {
+				//something is wrong when C'SIZE > 5'
+				char *token = strtok(string, "'");
+				token = strtok(NULL, "'");
+				return strlen(token);
+			}
+		case RESW:
+			return 3 * atoi(string);
+		case RESB:
+			//decimal = strtol(string, NULL, 10);
+			//snprintf(hexString, 8, "%x", decimal);
+			return atoi(hexString);
+		case WORD:
+			return bytes + 3;
+	}
 }
 
 int isDirective(char* string) 
@@ -34,5 +69,5 @@ int isDirective(char* string)
 
 bool isStartDirective(int directiveType)
 {
-	
+	return directiveType == START ? true : false;
 }
