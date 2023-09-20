@@ -56,12 +56,14 @@ void insertSymbol(symbol* symbolTable[], char symbolName[], int symbolAddress)
 			if (strcmp(symbolTable[hashValue]->name, symbolName) == 0) {
 				inserted = true;
 				dupName = true;
+				displayError(DUPLICATE, symbolTable[hashValue]->name);
+				exit(0);
 			} 
 			hashValue++;
 		}
 	}
 	if (!dupName) {
-		//printf("Added %s to Symbol Table at Index %d \n", symbolName, hashValue);
+		printf("Added %s to Symbol Table at Index %d \n", symbolName, hashValue);
 	}
 
 }

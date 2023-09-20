@@ -16,7 +16,10 @@ int main(int argc, char* argv[])
 	address addresses = { 0x00, 0x00, 0x00 };
 
 	// Check whether at least one (1) input file was provided
-	
+	if (argv[1] == NULL) {
+		displayError(MISSING_COMMAND_LINE_ARGUMENTS, NULL);
+		return -1;
+	}
 
 	// Create the symbol table for storing the symbol data
 	symbol* symbolTable[SYMBOL_TABLE_SIZE];
@@ -26,9 +29,16 @@ int main(int argc, char* argv[])
 	performPass1(symbolTable, argv[1], &addresses);
 
 	// Display the symbol data contained in the symbol table
+	printf("\n%-10s", "Symbol Table Contents\n");
+	for (int i = 0; i < 25; i++) {
+		printf("-");
+	}
+	printf("\n");
+	printf("%-6s %-10s %s\n", "Index", "Name", "Address"); 
+	printf("%-6s %-10s %s\n", "-----", "----", "-------"); 
 	for (int i = 0; i < SYMBOL_TABLE_SIZE; i++) {
 		if (symbolTable[i] != NULL) { 
-			printf("Name: %s Address: %x\n", symbolTable[i]->name, symbolTable[i]->address);
+			printf("%-6d %-10s 0x%x\n", i, symbolTable[i]->name, symbolTable[i]->address);
 		}
 	}
 	// Display the assembly summary data
@@ -40,73 +50,81 @@ void performPass1(symbol* symbolTable[], char* filename, address* addresses)
 	FILE* ptr;
 	char record[INPUT_BUF_SIZE];
 	symbol symbol;
-	address address;
 
 	ptr = fopen(filename, "r");
 	if (ptr == NULL){
 		//perform error handling here
-		
+		displayError(FILE_NOT_FOUND, filename);
 		exit(1);
 	}
 
-	printf("%-10s", "Symbol Table Log\n");
+	printf("\n%-10s", "Symbol Table Logs\n");
 	for (int i = 0; i < 25; i++) {
 		printf("-");
 	}
 	printf("\n");
-
-	// //check PC address
-	// fgets(record, INPUT_BUF_SIZE, ptr);
-	// strtok(record, " ");
-	// strtok(NULL, " ");
-	// pcAddress = atof(strtok(NULL, " "));
-
-	// printf("\n\n-----------------------%d", pcAddress);
 
 	while (fgets(record, INPUT_BUF_SIZE, ptr) != NULL) {
 		if (record[0] != '#') {
 
 			if (record[0] < 32) {
 				//display BLANK_RECORD 
+				displayError(BLANK_RECORD, NULL);
+				exit(-1);
 			}
 
 			segment* newSeg = prepareSegments(record);
 			//printf("%s %s %s\n", newSeg->label, newSeg->operation, newSeg->operand);
 
-			if (isDirective(newSeg->label) > 0 || isOpcode(newSeg->operation) > 0) {
+			if(addresses->current > 0x10000) {
+				//check PC address
+				char err[12];
+				sprintf(err, "%d", addresses->current);
+				displayError(OUT_OF_MEMORY, err);
+				printf(" %s", newSeg->label);
+				exit(-1);
+			}
+
+			if (isDirective(newSeg->label) > 0 || isOpcode(newSeg->label)) {
 				//display ILLEGAL_SYMBOL
+				displayError(ILLEGAL_SYMBOL, newSeg->label);
+				exit(1);
 			}
 
 			int dirType = isDirective(newSeg->operation);
 			if (isStartDirective(dirType)) {
-				//address.start = atoi(newSeg->operand);
-				address.start = strtol(newSeg->operand, NULL, 16);
-				address.current = strtol(newSeg->operand, NULL, 16);
-				address.increment = 0x0000;
-				//address.current = atoi(newSeg->operand);
-				printf("STARTING ---- %x and %x\n", address.start, address.current);
+				addresses->start = strtol(newSeg->operand, NULL, 16);
+				addresses->current = strtol(newSeg->operand, NULL, 16);
+				//printf("STARTING ---- %x and %x\n", address.start, address.current);
 			} else if (dirType != 0) {
-				address.increment = getMemoryAmount(dirType, newSeg->operand);
-				printf("dirType %x, INCREMENT ---- %d\n", dirType, address.increment);
+				addresses->increment = getMemoryAmount(dirType, newSeg->operand);
+				//printf("dirType %x, INCREMENT ---- %d\n", dirType, address.increment);
+			} else if (isOpcode(newSeg->operation)) {
+				addresses->increment = getOpcodeFormat(newSeg->operation);
 			} else {
-				//display ILLEGAL_OPCODE_DIRECTIVE 
+				//display ILLEGAL_OPCODE_DIRECTIVE
+				displayError(ILLEGAL_OPCODE_DIRECTIVE, newSeg->operation);
+				exit(-1);
+				//printf("Somehow went here\n");
 			}
 
-			if (isOpcode(newSeg->operation)) {
-				address.increment = getOpcodeFormat(newSeg->operation);
-				printf("newSeg->operation %s, INCREMENT ---- %d\n", newSeg->operation, address.increment);
-			} else {
-				//display ILLEGAL_OPCODE_DIRECTIVE 
-			}
+			// if (isOpcode(newSeg->operation)) {
+			// 	address.increment = getOpcodeFormat(newSeg->operation);
+			// 	//printf("newSeg->operation %s, INCREMENT ---- %d\n", newSeg->operation, address.increment);
+			// } else {
+			// 	//display ILLEGAL_OPCODE_DIRECTIVE
+			// 	printf("Somehow went here v2\n");
+			// }
 
-			if (strlen(newSeg->label) > 0 && strcmp(newSeg->label, "FIRST") != 0) {
-				insertSymbol(symbolTable, newSeg->label, address.current);
+			if (strlen(newSeg->label) > 0 && strcmp(newSeg->label, "COPY") != 0) {
+				insertSymbol(symbolTable, newSeg->label, addresses->current);
 			}
 			
-			address.current += address.increment;
-			printf("Current: %x increment: %d\n", address.current, address.increment);
+			addresses->current += addresses->increment;
+			//printf("Current: %x increment: %d\n", address.current, address.increment);
 
-		}
+		} 
+
 		memset(record, '\0', sizeof(record));
 	}
 	fclose(ptr);

@@ -66,7 +66,12 @@ int getOpcodeValue(char* opcode)
 	}
 	// Use searchOpcodes() function to get opcode information
 	x = searchOpcodes(opcode);
-	return x != -1 ? opcodes[x].value : x;
+	if (x != -1) {
+		return opcodes[x].value;
+	} else {
+		return -1;
+	}
+	//return x != -1 ? opcodes[x].value : x;
 }
 
 // Do no modify any part of this function
@@ -76,7 +81,7 @@ bool isFormat4Instruction(char* opcode)
 }
 
 bool isOpcode(char* string)
-{
+{	
 	return getOpcodeValue(string) >= 0;
 }
 

@@ -31,11 +31,14 @@ int getMemoryAmount(int directiveType, char* string)
 			if (strstr(string, "X") != NULL) {
 				char *token = strtok(string, "'");
 				token = strtok(NULL, "'");
-				if (token[0] < '0' || token[0] > 'F' ) {
-					//ERROR 
+				if (strlen(token) > 2 || token[0] < '0' || token[0] > 'F' ) {
+					displayError(OUT_OF_RANGE_BYTE, token);
+					exit(1);
 				}
 				if(token[1] < '0' || token[1] > 'F') {
 					//ERROR
+					displayError(OUT_OF_RANGE_BYTE, token);
+					exit(1);
 				}
 				return bytes + 1;
 			} else {
@@ -49,9 +52,17 @@ int getMemoryAmount(int directiveType, char* string)
 		case RESB:
 			//decimal = strtol(string, NULL, 10);
 			//snprintf(hexString, 8, "%x", decimal);
-			return atoi(hexString);
+			//return atoi(hexString);
+			return atoi(string);
 		case WORD:
+			decimal = atoi(string);
+			if (decimal < -8388608 || decimal > 8388607) {
+				displayError(OUT_OF_RANGE_WORD, string);
+				exit(1);
+			}
 			return bytes + 3;
+		default:
+			break;
 	}
 }
 
