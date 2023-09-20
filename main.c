@@ -29,20 +29,14 @@ int main(int argc, char* argv[])
 	performPass1(symbolTable, argv[1], &addresses);
 
 	// Display the symbol data contained in the symbol table
-	printf("\n%-10s", "Symbol Table Contents\n");
-	for (int i = 0; i < 25; i++) {
-		printf("-");
-	}
-	printf("\n");
-	printf("%-6s %-10s %s\n", "Index", "Name", "Address"); 
-	printf("%-6s %-10s %s\n", "-----", "----", "-------"); 
-	for (int i = 0; i < SYMBOL_TABLE_SIZE; i++) {
-		if (symbolTable[i] != NULL) { 
-			printf("%-6d %-10s 0x%x\n", i, symbolTable[i]->name, symbolTable[i]->address);
-		}
-	}
+	displaySymbolTable(symbolTable);
+
 	// Display the assembly summary data
-	
+	printf("\n%-10s\n", "Assembly Summary");
+	printf("%-10s\n", "----------------");
+	printf("Starting Address: 0x%-2x\n", addresses.start);
+	printf("Ending Addresses: 0x%-2x\n", addresses.current);
+	printf("Program Size (bytes): %-2d\n\n", addresses.current - addresses.start);
 }
 
 void performPass1(symbol* symbolTable[], char* filename, address* addresses)

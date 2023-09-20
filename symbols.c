@@ -28,8 +28,18 @@ int computeHash(char* symbolName)
 
 void displaySymbolTable(symbol* symbolTable[])
 {
-
-	
+	printf("\n%-10s", "Symbol Table Contents\n");
+	for (int i = 0; i < 25; i++) {
+		printf("-");
+	}
+	printf("\n");
+	printf("%-6s %-10s %s\n", "Index", "Name", "Address"); 
+	printf("%-6s %-10s %s\n", "-----", "----", "-------"); 
+	for (int i = 0; i < SYMBOL_TABLE_SIZE; i++) {
+		if (symbolTable[i] != NULL) { 
+			printf("%-6d %-10s 0x%x\n", i, symbolTable[i]->name, symbolTable[i]->address);
+		}
+	}
 }
 
 void initializeSymbolTable(symbol* symbolTable[])
