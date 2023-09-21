@@ -70,15 +70,6 @@ void performPass1(symbol* symbolTable[], char* filename, address* addresses)
 			segment* newSeg = prepareSegments(record);
 			//printf("%s %s %s\n", newSeg->label, newSeg->operation, newSeg->operand);
 
-			if(addresses->current > 0x10000) {
-				//check PC address
-				char err[12];
-				sprintf(err, "%d", addresses->current);
-				displayError(OUT_OF_MEMORY, err);
-				printf(" %s", newSeg->label);
-				exit(-1);
-			}
-
 			if (isDirective(newSeg->label) > 0 || isOpcode(newSeg->label)) {
 				//display ILLEGAL_SYMBOL
 				displayError(ILLEGAL_SYMBOL, newSeg->label);
@@ -117,6 +108,14 @@ void performPass1(symbol* symbolTable[], char* filename, address* addresses)
 			addresses->current += addresses->increment;
 			//printf("Current: %x increment: %d\n", address.current, address.increment);
 
+			if(addresses->current > 0x100000) {
+				//check PC address
+				char err[12];
+				sprintf(err, "%x", addresses->current);
+				displayError(OUT_OF_MEMORY, err);
+				//printf(" %s", newSeg->label);
+				exit(-1);
+			}
 		} 
 
 		memset(record, '\0', sizeof(record));
